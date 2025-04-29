@@ -1,0 +1,40 @@
+body {
+    padding: 0;
+    margin: 0;
+    height: 100vh;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color:aqua;
+    height: 100%;
+}
+
+.form {
+    display: flex;
+    height: 50px;
+    width: 500px;
+}
+
+input {
+    flex: 1;
+    height: 100%;
+    border-radius: 10px;
+    margin-right: 5px;
+}
+
+button {
+    height: 100%;
+    color: azure;
+    background-color: chocolate;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer
+}
+
+.result {
+    margin-top: 10px;
+}
