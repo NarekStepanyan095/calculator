@@ -19,90 +19,78 @@ function primitiveCalc(num1, operator, num2) {
 };
 
 function calculateChainOfOperations(operationString) {
-    const mathOperators = ["/", "*", "-", "+"];
+    let mathOperatorsRegex = /[*\/]/g;
+    const allOperatorsRegex = /[*\/+-]/g
 
     let num1;
     let num2;
     let operationStringCopy = operationString;
+    let isFirstNumberNegative = false;
 
-    while (mathOperators.length) {
-        while (operationStringCopy.indexOf(mathOperators[0]) !== -1) {
-            if (!isNaN(operationStringCopy)) { break };
+    while (operationStringCopy.search(allOperatorsRegex) !== -1) {
+        if (!isNaN(operationStringCopy)) {
+            return operationStringCopy;
+        }
 
-            const currentOperator = mathOperators[0];
 
-            let currentOperatorIndex = operationStringCopy.indexOf(currentOperator);
-            let slicedString = operationStringCopy;
+        if (operationStringCopy.search(mathOperatorsRegex) === -1) {
+            mathOperatorsRegex = /[+-]/g;
+        }
 
-            for (let i = currentOperatorIndex - 1; i >= 0; i--) {
-                if (currentOperator !== "-") {
-                    if (isNaN(operationStringCopy[i]) && isNaN(operationStringCopy[i - 1])) {
-                        num1 = operationStringCopy.slice(i, currentOperatorIndex);
-                        slicedString = slicedString.slice(i);
-                        break;
-                    }
-                    if (isNaN(operationStringCopy[i]) && !isNaN(operationStringCopy[i - 1])) {
-                        num1 = operationStringCopy.slice(i + 1, currentOperatorIndex);
-                        slicedString = slicedString.slice(i + 1);
-                        break;
-                    }
-                    if (i === 0) {
-                        num1 = operationStringCopy.slice(0, currentOperatorIndex);
-                        break;
-                    }
+        if (operationStringCopy[0] === "-" && mathOperatorsRegex.source === "[+-]") {
+            operationStringCopy = operationStringCopy.substring(1);
+            isFirstNumberNegative = true;
+            continue;
+        }
+
+        const currentOperatorIndex = operationStringCopy.search(mathOperatorsRegex);
+        const currentOperator = operationStringCopy[currentOperatorIndex];
+
+        for (let i = currentOperatorIndex + 1; i <= operationStringCopy.length - 1; i++) {
+            if (allOperatorsRegex.test(operationStringCopy[i]) && i !== operationStringCopy.length - 1) {
+
+                if (operationStringCopy[i] === "-" && isNaN(operationStringCopy[i - 1])) {
+                    continue;
+                }
+
+                num2 = operationStringCopy.slice(currentOperatorIndex + 1, i);
+                break;
+            }
+            if (i === operationStringCopy.length - 1) {
+                num2 = operationStringCopy.slice(currentOperatorIndex + 1)
+            }
+        }
+
+        for (let i = currentOperatorIndex - 1; i >= 0; i--) {
+
+            if (allOperatorsRegex.test(operationStringCopy[i]) && i !== 0) {
+
+                if (operationStringCopy[i] === "-" && isNaN(operationStringCopy[i - 1])) {
+                    continue;
+                }
+
+                num1 = operationStringCopy.slice(i + 1, currentOperatorIndex)
+                break;
+            }
+            if (i === 0) {
+                num1 = operationStringCopy.slice(0, currentOperatorIndex)
+                if (isFirstNumberNegative) {
+                    num1 = "-" + num1;
                 }
             }
+        }
 
-            if (currentOperator === "-") {
-                for (let i = 1; i < operationStringCopy.length; i++) {
-                    if (operationStringCopy[i] === "-") {
-                        for (let j = i - 1; j--; j >= 0) {
-                            if (isNaN(operationStringCopy[j])) {
-                                num1 = operationStringCopy.slice(j + 1, i);
-                                break;
-                            }
-                            if (j === 0) {
-                                num1 = operationStringCopy.slice(0, i);
-                            }
-                        }
+        let slicedString = num1 + currentOperator + num2;
+        const result = primitiveCalc(num1, currentOperator, num2);
 
-                        slicedString = slicedString.slice(i + 1);
-
-                        for (let i = 1; i <= slicedString.length; i++) {
-                            if (slicedString[i] === "-" || slicedString[i] === undefined || slicedString[i] === "+") {
-                                num2 = slicedString.slice(0, i)
-                                slicedString = num1 + "-" + num2;
-                                break;
-                            }
-                        };
-                        break;
-                    }
-                }
-            }
-
-            if (currentOperator !== "-") {
-                for (let i = currentOperatorIndex + 2; i <= operationStringCopy.length; i++) {
-
-                    if (i === operationStringCopy.length) {
-                        num2 = operationStringCopy.slice(currentOperatorIndex + 1);
-                        break;
-                    }
-                    if (isNaN(operationStringCopy[i])) {
-                        num2 = operationStringCopy.slice(currentOperatorIndex + 1, i);
-                        slicedString = num1 + currentOperator + num2;
-                        break;
-                    }
-                }
-            };
-
-            const result = primitiveCalc(num1, currentOperator, num2);
-
-            operationStringCopy = operationStringCopy.replaceAll(slicedString, result);
-            operationStringCopy = operationStringCopy.replaceAll("+-", "-");
-        };
-
-        mathOperators.shift();
-    }
+        if (isFirstNumberNegative) {
+            isFirstNumberNegative = false;
+            slicedString = slicedString.substring(1);
+        }
+        operationStringCopy = operationStringCopy.replaceAll(slicedString, result);
+        operationStringCopy = operationStringCopy.replaceAll("+-", "-");
+        operationStringCopy = operationStringCopy.replaceAll("--", "+");
+    };
 
     return operationStringCopy;
 }
